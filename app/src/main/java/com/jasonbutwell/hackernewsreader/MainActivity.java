@@ -1,5 +1,7 @@
 package com.jasonbutwell.hackernewsreader;
 
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -25,16 +27,26 @@ public class MainActivity extends AppCompatActivity {
 
     ArrayList<Integer> articleIDs;
 
+    SQLiteDatabase articlesDB;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        String DBName = "Articles";
+        String DBTableName = "articles";
+        String createDataBaseSQL = "CREATE TABLE IF NOT EXISTS "+ DBTableName +" (id INT PRIMARY KEY, articleId INT, title VARCHAR, url VARCHAR, content VARCHAR)";
+        String dataInsertSQL = "INSERT INTO "+ DBTableName +" (articleId, title, url) VALUES (";
+
+        articleIDs = new ArrayList<>();
         articleURLS = new HashMap<Integer, String>();
         articleTitles = new HashMap<Integer, String>();
-        articleIDs = new ArrayList<>();
 
         DownloadTask task = new DownloadTask();
+
+        articlesDB = this.openOrCreateDatabase(DBName, MODE_PRIVATE, null);
+        articlesDB.execSQL(createDataBaseSQL);
 
         try {
             String result = task.execute(articleIDURL).get();
@@ -68,6 +80,10 @@ public class MainActivity extends AppCompatActivity {
                     articleTitles.put(Integer.valueOf(articleID), title);
                     articleURLS.put(Integer.valueOf(articleID), url);
 
+                    // add data to our SQLite database
+
+                    articlesDB.execSQL(dataInsertSQL + articleID + ",'" + title + "','" + url + "')");
+
                     // Output everything to the log for testing for now.
 
 //                    Log.i("article",Integer.toString(i));
@@ -78,10 +94,29 @@ public class MainActivity extends AppCompatActivity {
 
                 // output everything we have in the array list and the hashmaps
 
-                Log.i("articleIds", articleIDs.toString());
-                Log.i("articleTitles",articleTitles.toString());
-                Log.i("articleURLs", articleURLS.toString());
+//                Log.i("articleIds", articleIDs.toString());
+//                Log.i("articleTitles",articleTitles.toString());
+//                Log.i("articleURLs", articleURLS.toString());
 
+                // Output the data from the database
+
+                Cursor cursor = articlesDB.rawQuery("SELECT * FROM " + DBTableName, null);
+
+                int articleIdIndex = cursor.getColumnIndex("articleId");
+                int urlIndex = cursor.getColumnIndex("url");
+                int titleIndex = cursor.getColumnIndex("title");
+
+                cursor.moveToFirst();
+
+                int count = cursor.getCount();
+
+                while (cursor != null && count > 0 ) {
+                    Log.i("articleResults - id", Integer.toString(cursor.getInt(articleIdIndex)));
+                    Log.i("articleResults - title", cursor.getString(titleIndex));
+                    Log.i("articleResults - url", cursor.getString(urlIndex));
+                    cursor.moveToNext();
+                    count--;
+                }
             }
 
         } catch (InterruptedException e) {
