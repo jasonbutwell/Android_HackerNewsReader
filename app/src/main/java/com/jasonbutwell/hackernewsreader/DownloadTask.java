@@ -69,5 +69,18 @@ public class DownloadTask extends AsyncTask<String, Void, String> {
 
     protected void onPostExecute(String result ) {
         super.onPostExecute( result );
+
+//        if ( result != null ) {
+//            try {
+//                JSONArray jsonArray = new JSONArray(result);
+//
+//                for ( int i = 0; i < jsonArray.length(); i++ ) {
+////               Log.i("result", jsonArray.get(i).toString());
+//                }
+//
+//            } catch (JSONException e) {
+//                e.printStackTrace();
+//            }
+//        }
     }
 }
