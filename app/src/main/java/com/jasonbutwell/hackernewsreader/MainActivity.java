@@ -2,6 +2,7 @@ package com.jasonbutwell.hackernewsreader;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteStatement;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -37,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
         String DBName = "Articles";
         String DBTableName = "articles";
         String createDataBaseSQL = "CREATE TABLE IF NOT EXISTS "+ DBTableName +" (id INT PRIMARY KEY, articleId INT, title VARCHAR, url VARCHAR, content VARCHAR)";
-        String dataInsertSQL = "INSERT INTO "+ DBTableName +" (articleId, title, url) VALUES (";
+        String dataInsertSQL = "INSERT INTO "+ DBTableName +" (articleId, title, url) VALUES (?, ?, ?)";
 
         articleIDs = new ArrayList<>();
         articleURLS = new HashMap<Integer, String>();
@@ -80,9 +81,16 @@ public class MainActivity extends AppCompatActivity {
                     articleTitles.put(Integer.valueOf(articleID), title);
                     articleURLS.put(Integer.valueOf(articleID), url);
 
-                    // add data to our SQLite database
+                    // add data to our SQLite database - revised
+                    // using a prepared statement to handle special characters
+                    // to try to better safe guard against SQL injection woes
 
-                    articlesDB.execSQL(dataInsertSQL + articleID + ",'" + title + "','" + url + "')");
+                    SQLiteStatement statement = articlesDB.compileStatement( dataInsertSQL );
+                    statement.bindString(1,articleID);
+                    statement.bindString(2,title);
+                    statement.bindString(3,url);
+
+                    statement.execute();
 
                     // Output everything to the log for testing for now.
 
