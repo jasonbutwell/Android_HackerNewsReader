@@ -5,6 +5,9 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
@@ -30,6 +33,7 @@ public class MainActivity extends AppCompatActivity {
     ArrayList<Integer> articleIDs;
 
     ArrayList<String> titles;
+    ArrayList<String> urls;
     ArrayAdapter titlesAdapter;
 
     SQLiteDatabase articlesDB;
@@ -44,8 +48,19 @@ public class MainActivity extends AppCompatActivity {
 
         // create new array list and pair with array adapter
         titles = new ArrayList<String>();
+        urls = new ArrayList<String>();
+
         titlesAdapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, titles);
         articlesListView.setAdapter(titlesAdapter);
+
+        // List view on item click listener implementation
+        articlesListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Log.i("articleURL", urls.get(position)); // logs the article url chosen to the console for now.
+            }
+        });
+        //
 
         String DBName = "Articles";
         String DBTableName = "articles";
@@ -138,10 +153,12 @@ public class MainActivity extends AppCompatActivity {
                 int counter = 1;
 
                 titles.clear(); // we clear the titles array list just in case
+                urls.clear();   // clear urls just in case also
 
                 while (cursor != null && count > 0 ) {
 
-                    titles.add(cursor.getString(titleIndex));   // add the title to the
+                    titles.add(cursor.getString(titleIndex));   // add the title to the array list for titles
+                    urls.add(cursor.getString(urlIndex));       // also add the url to the array list for urls
 
 //                    Log.i("article",Integer.toString(counter++));
 //                    Log.i("articleResults - id", Integer.toString(cursor.getInt(articleIdIndex)));
