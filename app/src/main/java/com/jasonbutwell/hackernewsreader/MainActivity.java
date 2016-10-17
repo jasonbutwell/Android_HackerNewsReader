@@ -1,5 +1,6 @@
 package com.jasonbutwell.hackernewsreader;
 
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
@@ -21,7 +22,7 @@ import java.util.concurrent.ExecutionException;
 
 public class MainActivity extends AppCompatActivity {
 
-    private final int maxNumberOfArticles = 20;
+    private final int maxNumberOfArticles = 10;
 
     private final String articleIDMarker = "<ID>";
     private String articleIDURL = "https://hacker-news.firebaseio.com/v0/topstories.json?prety=pretty";
@@ -34,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
 
     ArrayList<String> titles;
     ArrayList<String> urls;
+
     ArrayAdapter titlesAdapter;
 
     SQLiteDatabase articlesDB;
@@ -58,6 +60,11 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Log.i("articleURL", urls.get(position)); // logs the article url chosen to the console for now.
+
+                // call the article activity to pass the url to the web view activity
+                Intent intent = new Intent( getApplicationContext(), Article.class);
+                intent.putExtra("articleURL", urls.get(position));
+                startActivity(intent);
             }
         });
         //
@@ -85,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
         try {
             String result = task.execute(articleIDURL).get();
 
-            //Log.i("result",result);
+            Log.i("result",result);
 
             if ( result != null ) {
                 JSONArray jsonArray = new JSONArray(result);
@@ -127,10 +134,10 @@ public class MainActivity extends AppCompatActivity {
 
                     // Output everything to the log for testing for now.
 
-//                    Log.i("article",Integer.toString(i));
-//                    Log.i("article",jsonArray.getString(i));
-//                    Log.i("article",title);
-//                    Log.i("article",url);
+                    Log.i("article",Integer.toString(i));
+                    Log.i("article",jsonArray.getString(i));
+                    Log.i("article",title);
+                    Log.i("article",url);
                 }
 
                 // output everything we have in the array list and the hashmaps
