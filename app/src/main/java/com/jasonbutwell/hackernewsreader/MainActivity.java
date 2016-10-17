@@ -39,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
         String DBTableName = "articles";
         String createDataBaseSQL = "CREATE TABLE IF NOT EXISTS "+ DBTableName +" (id INT PRIMARY KEY, articleId INT, title VARCHAR, url VARCHAR, content VARCHAR)";
         String dataInsertSQL = "INSERT INTO "+ DBTableName +" (articleId, title, url) VALUES (?, ?, ?)";
+        String dataBaseClearSQL = "DROP TABLE IF EXISTS " + DBTableName;
 
         articleIDs = new ArrayList<>();
         articleURLS = new HashMap<Integer, String>();
@@ -47,6 +48,10 @@ public class MainActivity extends AppCompatActivity {
         DownloadTask task = new DownloadTask();
 
         articlesDB = this.openOrCreateDatabase(DBName, MODE_PRIVATE, null);
+
+        // Used to clear existing data from Database
+        articlesDB.execSQL(dataBaseClearSQL);
+
         articlesDB.execSQL(createDataBaseSQL);
 
         try {
@@ -118,7 +123,11 @@ public class MainActivity extends AppCompatActivity {
 
                 int count = cursor.getCount();
 
+                int counter = 1;
+
                 while (cursor != null && count > 0 ) {
+
+                    Log.i("article",Integer.toString(counter++));
                     Log.i("articleResults - id", Integer.toString(cursor.getInt(articleIdIndex)));
                     Log.i("articleResults - title", cursor.getString(titleIndex));
                     Log.i("articleResults - url", cursor.getString(urlIndex));
