@@ -5,7 +5,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -28,6 +29,9 @@ public class MainActivity extends AppCompatActivity {
 
     ArrayList<Integer> articleIDs;
 
+    ArrayList<String> titles;
+    ArrayAdapter titlesAdapter;
+
     SQLiteDatabase articlesDB;
 
     @Override
@@ -35,9 +39,18 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // For showing our articles in the UI list view
+        ListView articlesListView = (ListView)findViewById(R.id.articlesListView);
+
+        // create new array list and pair with array adapter
+        titles = new ArrayList<String>();
+        titlesAdapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, titles);
+        articlesListView.setAdapter(titlesAdapter);
+
         String DBName = "Articles";
         String DBTableName = "articles";
         String createDataBaseSQL = "CREATE TABLE IF NOT EXISTS "+ DBTableName +" (id INT PRIMARY KEY, articleId INT, title VARCHAR, url VARCHAR, content VARCHAR)";
+        String extractDataSQL = "SELECT * FROM " + DBTableName +" ORDER BY articleId DESC";
         String dataInsertSQL = "INSERT INTO "+ DBTableName +" (articleId, title, url) VALUES (?, ?, ?)";
         String dataBaseClearSQL = "DROP TABLE IF EXISTS " + DBTableName;
 
@@ -49,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
 
         articlesDB = this.openOrCreateDatabase(DBName, MODE_PRIVATE, null);
 
-        // Used to clear existing data from Database
+        // Used to clear existing data from Database for testing
         articlesDB.execSQL(dataBaseClearSQL);
 
         articlesDB.execSQL(createDataBaseSQL);
@@ -113,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
 
                 // Output the data from the database
 
-                Cursor cursor = articlesDB.rawQuery("SELECT * FROM " + DBTableName, null);
+                Cursor cursor = articlesDB.rawQuery(extractDataSQL, null);
 
                 int articleIdIndex = cursor.getColumnIndex("articleId");
                 int urlIndex = cursor.getColumnIndex("url");
@@ -122,18 +135,23 @@ public class MainActivity extends AppCompatActivity {
                 cursor.moveToFirst();
 
                 int count = cursor.getCount();
-
                 int counter = 1;
+
+                titles.clear(); // we clear the titles array list just in case
 
                 while (cursor != null && count > 0 ) {
 
-                    Log.i("article",Integer.toString(counter++));
-                    Log.i("articleResults - id", Integer.toString(cursor.getInt(articleIdIndex)));
-                    Log.i("articleResults - title", cursor.getString(titleIndex));
-                    Log.i("articleResults - url", cursor.getString(urlIndex));
+                    titles.add(cursor.getString(titleIndex));   // add the title to the
+
+//                    Log.i("article",Integer.toString(counter++));
+//                    Log.i("articleResults - id", Integer.toString(cursor.getInt(articleIdIndex)));
+//                    Log.i("articleResults - title", cursor.getString(titleIndex));
+//                    Log.i("articleResults - url", cursor.getString(urlIndex));
                     cursor.moveToNext();
                     count--;
-                }
+                };
+
+                titlesAdapter.notifyDataSetChanged(); // notify that we have changed our array so the adapter can update the view
             }
 
         } catch (InterruptedException e) {
